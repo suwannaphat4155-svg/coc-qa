@@ -1,0 +1,21 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { font-family: "Noto Sans Thai", "IBM Plex Sans Thai", system-ui, sans-serif; font-synthesis: none; text-rendering: optimizeLegibility; color: #111; }
+body { margin: 0; min-width: 320px; background: #f6f5f1; }
+button, input, select { font: inherit; }
+button { cursor: pointer; }
+.shadow-panel { box-shadow: 3px 3px 0 rgba(0,0,0,.9); }
+.table-wrap { overflow-x: auto; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { padding: 10px 12px; text-align: left; color: #222; background: #f1f0eb; border-bottom: 2px solid #111; font-size: 11px; font-weight: 800; letter-spacing: .04em; white-space: nowrap; }
+.data-table td { padding: 11px 12px; border-top: 1px solid #b9b8b2; white-space: nowrap; }
+.dark .data-table td { border-color: rgba(255,255,255,.08); }
+.data-table tbody tr:hover { background: #e8f3ef; }
+.input { min-height: 40px; width: 100%; border: 2px solid #171717; border-radius: 4px; background: white; padding: 8px 12px; color: #111; outline: none; box-shadow: 2px 2px 0 rgba(0,0,0,.14); }
+.input:focus { border-color: #111; box-shadow: 3px 3px 0 #3aa987; }
+.dark .input { border-color: rgba(255,255,255,.7); background: #17202b; color: white; }
+.badge { display: inline-flex; border: 1px solid currentColor; border-radius: 999px; padding: 2px 7px; font-size: 10px; font-weight: 700; }
+button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #3aa987; outline-offset: 2px; }
+@media print { aside, header, button { display: none !important; } main { padding: 0 !important; } }
