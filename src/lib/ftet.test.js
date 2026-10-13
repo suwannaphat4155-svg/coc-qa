@@ -15,14 +15,22 @@ describe("FTET calculations", () => {
     expect(calculateFtET({ project: 1 })).toBeCloseTo(0.02857, 5);
   });
 
+  it("uses explicit teaching periods and excludes co-teaching and coordinator loads", () => {
+    expect(calculateFtET({ lecture: 3, weeks: 8 })).toBeCloseTo(0.09143, 5);
+    expect(calculateFtET({ lecture: 3, weeks: 5 })).toBeCloseTo(0.05714, 5);
+    expect(calculateFtET({ lecture: 3, isCoTeach: true })).toBe(0);
+    expect(calculateFtET({ project: 2, isCoordinatorLoad: true })).toBe(0);
+  });
+
   it("averages 2562 non-AISE programs for the CoC value", () => {
     expect(averageCollegeFtET({ Comp: 0.49, DE: 0.5, Dbiz: 0.46, MsComp: 0.43, AISE: 0.99 })).toBeCloseTo(0.47, 2);
     expect(averageCollegeFtET({ year: 2562, Comp: 0.49, DE: 0.5, Dbiz: 0.46, MsComp: 0.43, AISE: 0.99 })).toBeCloseTo(0.47, 2);
-    expect(averageCollegeFtET({ Comp: 0.49, DE: 0.5, Dbiz: 0.46, MsComp: null })).toBeCloseTo(0.4833, 3);
+    expect(averageCollegeFtET({ Comp: 0.49, DE: 0.5, Dbiz: 0.46, MsComp: null })).toBeNull();
   });
 
   it("calculates FTES and teaching load using workbook formulas", () => {
     expect(calculateFtes(3, 36)).toBe(6);
+    expect(calculateFtes(3, 36, "graduate")).toBe(9);
     expect(calculateTeachingLoad(2, 2, 1)).toBe(3);
   });
 

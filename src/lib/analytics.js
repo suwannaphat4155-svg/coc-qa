@@ -1,6 +1,15 @@
 import { average, averageCollegeFtET, calculateTeacherFtET } from "./ftet.js";
 
-const canonicalProgram = (program) => (String(program).toLowerCase() === "dbiz" ? "Dbiz" : program);
+const canonicalProgram = (program) => ({
+  comp: "Comp",
+  de: "DE",
+  dbiz: "Dbiz",
+  aise: "AISE",
+  mscomp: "MsComp",
+  it: "IT",
+  se: "SE",
+  ebiz: "EBiz",
+}[String(program).toLowerCase()] ?? program);
 
 export function getAnnualSeries(snapshot) {
   const records = snapshot?.summaries?.annual ?? [];
@@ -57,7 +66,7 @@ export function getPrimaryDetails(snapshot) {
       .filter((record) => record.year !== 2561 && !/(?:^|[_ -])(Comp|DE|DBiz|Dbiz|AISE|MsComp|IT|SE|EBiz)(?:$|[_ -])/i.test(record.sourceSheet))
       .map((record) => `${record.year}:${record.semester}`),
   );
-  return records.filter((record) => {
+  const primary = records.filter((record) => {
     if (record.year === 2561) {
       return /(?:^|[_ -])(IT|SE|EBiz)(?:$|[_ -])/i.test(record.sourceSheet);
     }
@@ -65,6 +74,45 @@ export function getPrimaryDetails(snapshot) {
       ? !/(?:^|[_ -])(Comp|DE|DBiz|Dbiz|AISE|MsComp|IT|SE|EBiz)(?:$|[_ -])/i.test(record.sourceSheet)
       : true;
   });
+  const primaryByIdentity = new Map();
+  const identityFor = (row) => [
+    row.year,
+    row.semester,
+    row.teacher,
+    row.courseCode,
+    row.subject,
+    row.section,
+    row.lecture,
+    row.practical,
+    row.project,
+    row.weeks,
+  ].map((value) => String(value ?? "").trim().toLowerCase()).join("|");
+  primary.forEach((row) => {
+    const key = identityFor(row);
+    const matches = primaryByIdentity.get(key) ?? [];
+    matches.push(row);
+    primaryByIdentity.set(key, matches);
+  });
+  const duplicateOccurrences = new Map();
+  records.forEach((record) => {
+    const period = `${record.year}:${record.semester}`;
+    const sheetName = record.sourceSheet ?? "";
+    const isCurriculumSheet = /(?:^|[_ -])(Comp|DE|DBiz|Dbiz|AISE|MsComp|IT|SE|EBiz)(?:$|[_ -])/i.test(sheetName);
+    if (!genericTerms.has(period) || !isCurriculumSheet) return;
+    const identity = identityFor(record);
+    const occurrenceKey = `${sheetName}|${identity}`;
+    const occurrence = duplicateOccurrences.get(occurrenceKey) ?? 0;
+    duplicateOccurrences.set(occurrenceKey, occurrence + 1);
+    const target = primaryByIdentity.get(identity)?.[occurrence];
+    if (!target) return;
+    const programs = new Set((target.programs ?? []).map(canonicalProgram));
+    (record.programs ?? []).forEach((program) => {
+      const normalized = canonicalProgram(program);
+      if (["Comp", "DE", "Dbiz", "AISE", "MsComp", "IT", "SE", "EBiz"].includes(normalized)) programs.add(normalized);
+    });
+    target.programs = [...programs];
+  });
+  return primary;
 }
 
 export function aggregateTeachers(records) {

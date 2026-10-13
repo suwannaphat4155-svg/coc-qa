@@ -6,14 +6,15 @@ export const DEFAULT_CONSTANTS = Object.freeze({
 });
 
 export function calculateFtET(
-  { lecture = 0, practical = 0, project = 0, sections = 1, weeks } = {},
+  { lecture = 0, practical = 0, project = 0, sections = 1, weeks, isCoTeach = false, isCoordinatorLoad = false } = {},
   constants = DEFAULT_CONSTANTS,
 ) {
+  if (isCoTeach || isCoordinatorLoad) return 0;
   const values = [lecture, practical, project, sections, weeks ?? constants.workWeeks];
   if (values.some((value) => !Number.isFinite(Number(value)))) return 0;
   const [lectureHours, practicalHours, projectHours, sectionCount, weekCount] = values.map(Number);
   const denominator = Number(constants.weeklyHours) * Number(constants.workWeeks);
-  if (!denominator) return 0;
+  if (!Number.isFinite(denominator) || denominator <= 0) return 0;
   return (
     ((lectureHours * Number(constants.lectureWeight) +
       practicalHours * Number(constants.labWeight) +
@@ -34,18 +35,19 @@ export function average(values) {
 }
 
 export function averageCollegeFtET(programValues) {
-  const collegePrograms = new Set(["comp", "de", "dbiz", "mscomp"]);
-  return average(
-    Object.entries(programValues)
-      .filter(([program, value]) => value != null && value !== "" && collegePrograms.has(program.toLowerCase()) && Number.isFinite(Number(value)))
-      .map(([, value]) => value),
-  );
+  const values = ["comp", "de", "dbiz", "mscomp"].map((program) => {
+    const entry = Object.entries(programValues).find(([name]) => name.toLowerCase() === program);
+    return entry?.[1];
+  });
+  if (values.some((value) => value == null || value === "" || !Number.isFinite(Number(value)))) return null;
+  return average(values);
 }
 
-export function calculateFtes(credits, students) {
+export function calculateFtes(credits, students, level = "bachelor") {
   const creditValue = Number(credits);
   const studentCount = Number(students);
-  return Number.isFinite(creditValue * studentCount) ? (creditValue * studentCount) / 18 : 0;
+  const divisor = level === "graduate" ? 12 : 18;
+  return Number.isFinite(creditValue * studentCount) ? (creditValue * studentCount) / divisor : 0;
 }
 
 export function calculateTeachingLoad(lectureHours, practicalHours, sections = 1) {

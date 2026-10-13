@@ -33,6 +33,7 @@ export default function ToolsPage() {
   const { snapshot } = useDashboard();
   const [credits, setCredits] = useState(3);
   const [students, setStudents] = useState(36);
+  const [studyLevel, setStudyLevel] = useState("bachelor");
   const [sections, setSections] = useState(1);
   const [lecture, setLecture] = useState(2);
   const [practical, setPractical] = useState(2);
@@ -43,7 +44,8 @@ export default function ToolsPage() {
   const [undergradLoad, setUndergradLoad] = useState(0);
   const [graduateLoad, setGraduateLoad] = useState(0);
   const guidelines = useMemo(() => readGuidelines(snapshot), [snapshot]);
-  const ftes = calculateFtes(credits, students);
+  const ftes = calculateFtes(credits, students, studyLevel);
+  const divisor = studyLevel === "graduate" ? 12 : 18;
   const load = calculateTeachingLoad(lecture, practical, sections);
   const numberFor = (type, courses, fullTimeStudents, teachingLoad) => {
     if (!guidelines) return null;
@@ -59,9 +61,9 @@ export default function ToolsPage() {
   return <>
     <PageHeading title="เครื่องมือ FTES และอัตรากำลัง" description="คำนวณ FTES/Teaching Load และประมาณจำนวนอาจารย์ที่เหมาะสม โดยอ่านเกณฑ์อัตราส่วนจากแท็บใน workbook ไม่กำหนดค่าเอง" />
     <div className="grid gap-5 xl:grid-cols-2">
-      <Panel title="คำนวณ FTES รายวิชา" subtitle="สูตรจากต้นทาง: (หน่วยกิต × จำนวนนักศึกษา) ÷ 18">
-        <div className="grid gap-3 sm:grid-cols-2"><label className="text-xs text-slate-500">หน่วยกิต<input className="input mt-1" type="number" min="0" value={credits} onChange={(e) => setCredits(Number(e.target.value))} /></label><label className="text-xs text-slate-500">จำนวนนักศึกษา (คน)<input className="input mt-1" type="number" min="0" value={students} onChange={(e) => setStudents(Number(e.target.value))} /></label></div>
-        <div className="mt-4 rounded-xl bg-teal/5 p-4"><div className="text-xs text-slate-500">FTES</div><div className="mt-1 text-3xl font-bold text-teal">{formatFtET(ftes, 3)}</div><div className="mt-2 text-xs text-slate-500">{credits} × {students} ÷ 18 = {formatFtET(ftes, 4)}</div></div>
+      <Panel title="คำนวณ FTES รายวิชา" subtitle="ปริญญาตรีใช้ตัวหาร 18 · บัณฑิตศึกษาใช้ตัวหาร 12">
+        <div className="grid gap-3 sm:grid-cols-2"><label className="text-xs text-slate-500">ระดับการศึกษา<select className="input mt-1" value={studyLevel} onChange={(e) => setStudyLevel(e.target.value)}><option value="bachelor">ปริญญาตรี (÷ 18)</option><option value="graduate">บัณฑิตศึกษา (÷ 12)</option></select></label><label className="text-xs text-slate-500">หน่วยกิต<input className="input mt-1" type="number" min="0" value={credits} onChange={(e) => setCredits(Number(e.target.value))} /></label><label className="text-xs text-slate-500">จำนวนนักศึกษา (คน)<input className="input mt-1" type="number" min="0" value={students} onChange={(e) => setStudents(Number(e.target.value))} /></label></div>
+        <div className="mt-4 rounded-xl bg-teal/5 p-4"><div className="text-xs text-slate-500">FTES</div><div className="mt-1 text-3xl font-bold text-teal">{formatFtET(ftes, 3)}</div><div className="mt-2 text-xs text-slate-500">{credits} × {students} ÷ {divisor} = {formatFtET(ftes, 4)}</div></div>
       </Panel>
       <Panel title="คำนวณ Teaching Load" subtitle="สูตรจากต้นทาง: (ชั่วโมงบรรยาย + ชั่วโมงปฏิบัติ ÷ 2) × section">
         <div className="grid gap-3 sm:grid-cols-3">{[["บรรยาย (ชม.)", lecture, setLecture], ["ปฏิบัติ (ชม.)", practical, setPractical], ["Section", sections, setSections]].map(([label, value, setValue]) => <label key={label} className="text-xs text-slate-500">{label}<input className="input mt-1" type="number" min="0" value={value} onChange={(e) => setValue(Number(e.target.value))} /></label>)}</div>

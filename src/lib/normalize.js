@@ -85,6 +85,13 @@ function numericOrNull(value) {
   return Number.isFinite(num) ? num : null;
 }
 
+function inferWeeks(subject, courseCode) {
+  const label = `${subject} ${courseCode}`.toLowerCase();
+  if (/\bmid[\s-]?term\b|\bfinal\b|กลางภาค|ปลายภาค|ครึ่งภาค/i.test(label)) return 8;
+  if (/\bmodule\b|โมดูล/i.test(label)) return 5;
+  return null;
+}
+
 function normalizeDetail(name, rows) {
   const columns = discoverColumns(rows);
   if (columns.headerRow < 0 || columns.teacher < 0) return [];
@@ -108,15 +115,16 @@ function normalizeDetail(name, rows) {
     const hasLoad = rawValues.some((value) => normalizeText(value) !== "");
     if (!currentTeacher || (!courseCode && !subject && !hasLoad)) continue;
     const flags = {
-      isCoTeach: rawValues.some((value) => TEXT_ZERO_PATTERNS.isCoTeach.test(normalizeText(value))),
-      isCoordinatorLoad: rawValues.some((value) => TEXT_ZERO_PATTERNS.isCoordinatorLoad.test(normalizeText(value))),
+      isCoTeach: row.some((value) => TEXT_ZERO_PATTERNS.isCoTeach.test(normalizeText(value))),
+      isCoordinatorLoad: row.some((value) => TEXT_ZERO_PATTERNS.isCoordinatorLoad.test(normalizeText(value))),
       isRefError: row.some(isRefError),
     };
     const lecture = parseNumber(row[columns.lecture]);
     const practical = parseNumber(row[columns.practical]);
     const project = parseNumber(row[columns.project]);
-    const sections = parseNumber(row[columns.section]);
-    const weeks = parseNumber(row[columns.weeks]);
+    const sections = numericOrNull(row[columns.section]) ?? 1;
+    const sourceWeeks = numericOrNull(row[columns.weeks]);
+    const weeks = inferWeeks(subject, courseCode) ?? (sourceWeeks != null && sourceWeeks > 0 ? sourceWeeks : 15);
     const teacherFtets = numericOrNull(row[columns.ftets]);
     const departments = normalizeText(row[columns.department] ?? "")
       .split(/[,،/]/)
@@ -138,7 +146,15 @@ function normalizeDetail(name, rows) {
       practical,
       project,
       weeks,
-      ftet: calculateFtET({ lecture, practical, project, sections, weeks }),
+      ftet: calculateFtET({
+        lecture,
+        practical,
+        project,
+        sections,
+        weeks,
+        isCoTeach: flags.isCoTeach,
+        isCoordinatorLoad: flags.isCoordinatorLoad,
+      }),
       sourceFtET: numericOrNull(row[columns.ftet]),
       sourceFtets: teacherFtets,
       programs: departments.length ? departments : defaultProgram ? [defaultProgram] : [],

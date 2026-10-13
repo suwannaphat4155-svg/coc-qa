@@ -16,13 +16,25 @@ describe("workbook normalization", () => {
       ["1", "อาจารย์ ทดสอบ", "001", "วิชาทดสอบ", "3(2-2-5)", null, "1", "2", "2", "0", "15", "0.20", null, "Comp"],
       [null, null, "002", "เรียนร่วม", "3(2-2-5)", null, "1", "เรียนร่วมกับ 002", "0", "0", "15", "0.00", "0.20", "Comp"],
       [null, null, "003", "ไม่มี section และสัปดาห์", "3(2-2-5)", null, null, "3", "0", "0", null, "0.00", null, "Comp"],
+      [null, null, "004", "Course Midterm", "3(2-2-5)", null, "1", "3", "0", "0", "15", null, null, "Comp"],
+      [null, null, "005", "Course Module", "3(2-2-5)", null, "1", "3", "0", "0", "15", null, null, "Comp"],
+      [null, null, "006", "Co-taught numeric load", "3(2-2-5)", null, "1", "3", "0", "0", "15", null, null, "เรียนร่วมกับ 006"],
+      [null, null, "007", "Coordinator numeric load", "3(2-2-5)", null, "1", "0", "0", "2", "15", null, null, "คิดโหลดประสานงาน"],
     ];
     const result = normalizeWorkbook([{ name: "FTET_1-2567", rows }]);
-    expect(result.details).toHaveLength(3);
+    expect(result.details).toHaveLength(7);
     expect(result.details[1].teacher).toBe("อาจารย์ ทดสอบ");
     expect(result.details[1].isCoTeach).toBe(true);
     expect(result.details[1].sourceFtets).toBe(0.2);
     expect(result.details[0].ftet).toBeCloseTo(0.2, 5);
-    expect(result.details[2].ftet).toBe(0);
+    expect(result.details[2].ftet).toBeCloseTo(0.17143, 5);
+    expect(result.details[2].section).toBe(1);
+    expect(result.details[2].weeks).toBe(15);
+    expect(result.details[3].weeks).toBe(8);
+    expect(result.details[3].ftet).toBeCloseTo(0.09143, 5);
+    expect(result.details[4].weeks).toBe(5);
+    expect(result.details[4].ftet).toBeCloseTo(0.05714, 5);
+    expect(result.details[5].ftet).toBe(0);
+    expect(result.details[6].ftet).toBe(0);
   });
 });

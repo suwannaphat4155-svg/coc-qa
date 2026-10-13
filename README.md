@@ -60,9 +60,11 @@ Google Sheets อาจปิดกั้น cross-origin request ตามน�
 
 - FTET ต่อแถว = `((ชั่วโมงบรรยาย × 2) + (ชั่วโมงปฏิบัติ × 1.5) + โครงงาน) × section × สัปดาห์ / (35 × 15)`
 - FTETS อาจารย์ = ผลรวม FTET ต่อแถวของอาจารย์ในเทอมนั้น
-- FTET หลักสูตรรายเทอมมาจากตารางสรุปใน workbook; ค่าเฉลี่ย CoC คำนวณจาก Comp, DE, Dbiz, MsComp โดยไม่รวม AISE
-- FTES = `(หน่วยกิต × นักศึกษา) / 18`; Teaching Load = `(ชั่วโมงบรรยาย + ชั่วโมงปฏิบัติ / 2) × section`
-- ช่องตัวเลขที่มีข้อความ (เช่น เรียนร่วม/ประสานงาน) ถูกนับเป็น 0 และติดธง; `#REF!` ถือเป็น error/ไม่มีข้อมูล ไม่ใช่ 0 ในผลตรวจสอบ
+- FTET ต่อแถวที่เป็นเรียนร่วม หรือคิดโหลดประสานงาน = `0`; ชื่อวิชาที่มี midterm/final/ครึ่งภาค ใช้ 8 สัปดาห์ และ module ใช้ 5 สัปดาห์ (มีลำดับเหนือค่าที่กรอกในช่องสัปดาห์); กรณีอื่นใช้ค่าจาก workbook หรือ 15 เมื่อไม่มีค่า
+- FTETS อาจารย์ = ผลรวม FTET ต่อแถวของอาจารย์ในเทอมนั้น; ตัวกรองหน้ารายอาจารย์ใช้ปี/ภาค/หลักสูตรกับกราฟ ตาราง และยอดรวม
+- FTET หลักสูตรรายเทอมมาจากตารางสรุปใน workbook; ค่าเฉลี่ย CoC คำนวณจาก Comp, DE, Dbiz, MsComp โดยไม่รวม AISE และแสดงเมื่อมีค่าครบทั้ง 4 หลักสูตร
+- FTES = `(หน่วยกิต × นักศึกษา) / 18` สำหรับปริญญาตรี และหาร `12` สำหรับบัณฑิตศึกษา; Teaching Load = `(ชั่วโมงบรรยาย + ชั่วโมงปฏิบัติ / 2) × section`
+- ค่าโหลดที่เป็นข้อความ เช่น เรียนร่วม/ประสานงาน ถูกคำนวณเป็น 0 และติดธง; `#REF!` ถือเป็น error/ไม่มีข้อมูล ไม่ใช่ 0 ในผลตรวจสอบ
 
 หน้า Settings และ what-if ยอมให้ปรับค่าคงที่ใน browser; การแก้ค่าดังกล่าวไม่เขียนทับ source workbook หรือ snapshot
 
@@ -77,7 +79,7 @@ Google Sheets อาจปิดกั้น cross-origin request ตามน�
 - Build command: `npm run build`
 - Output directory: `dist`
 
-หากใช้ Google Sheets ให้ตั้ง `VITE_SHEET_ID` ใน Environment Variables ก่อน build; snapshot ยังเป็น fallback
+หากใช้ Google Sheets ให้ตั้ง `VITE_SHEET_ID` ใน Environment Variables ก่อน build; ปัจจุบันแอปอ่าน CSV จากแท็บที่แชร์แบบอ่านได้ผ่าน browser fetch, ไม่ใช่ Google Sheets API ที่ยืนยันตัวตนฝั่ง server. snapshot ยังเป็น fallback. อย่าใส่ service-account key หรือ secret ลงใน `VITE_*` variables เพราะค่าดังกล่าวจะถูกรวมไปกับ client bundle
 
 ### GitHub Pages
 
